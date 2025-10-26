@@ -50,7 +50,6 @@ int main()
         core.add_extension(new extension::parser::ParserExtension{ &core });
         core.add_extension(new extension::sub_server_switch::SubServerSwitchExtension{ &core });
         core.add_extension(new extension::command_handler::CommandHandlerExtension{ &core });
-        core.add_extension(new extension::feature_commands::FeatureCommandsExtension{ &core });
 
         // Run the core (Will block the main thread until the core is stopped)
         core.run();
