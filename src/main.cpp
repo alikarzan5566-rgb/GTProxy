@@ -5,7 +5,6 @@
 #include "extension/sub_server_switch/sub_server_switch_impl.hpp"
 #include "extension/web_server/web_server_impl.hpp"
 #include "extension/command_handler/command_handler_impl.hpp"
-#include "extension/feature_commands/feature_commands_impl.hpp"
 
 int main()
 {
