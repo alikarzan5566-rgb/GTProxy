@@ -36,10 +36,11 @@ public:
 
         // Create game packet
         packet::GameUpdatePacket packet{};
+        std::memset(&packet, 0, sizeof(packet));
         packet.type = packet::PACKET_CALL_FUNCTION;
         packet.net_id = -1;
         packet.flags.value = packet::PACKET_FLAG_NONE;
-        packet.data_size = variant_data.size();
+        packet.data_size = static_cast<uint32_t>(variant_data.size());
         packet.decompressed_data_size = 0;
 
         // Build byte stream
