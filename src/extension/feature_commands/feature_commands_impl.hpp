@@ -512,7 +512,7 @@ private:
         packet::GameUpdatePacket place_packet{};
         place_packet.type = packet::PACKET_TILE_CHANGE_REQUEST;
         place_packet.net_id = -1;
-        place_packet.flags.value = 0;
+        place_packet.flags.value = packet::PACKET_FLAG_NONE;
         place_packet.data_size = 8; // x, y coordinates
 
         // Build ext_data with tile coordinates and item id
