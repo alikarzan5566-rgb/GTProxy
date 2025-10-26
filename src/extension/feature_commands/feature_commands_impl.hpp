@@ -219,14 +219,29 @@ private:
 
         // Handle fly modification for PACKET_STATE
         if (fly_enabled_ && packet.type == packet::PACKET_STATE) {
+            // Cancel the original packet forwarding
+            event.canceled = true;
+
             // Modify packet flags to enable flying
-            // Set on_jump flag to allow continuous air movement
             packet.flags.on_jump = 1;
 
-            // Note: We need to modify the packet in the event
-            // Since event.get_packet() returns a copy, we need to access the original
-            // The packet modification will be reflected when forwarded
-            const_cast<packet::GameUpdatePacket&>(event.get_packet()) = packet;
+            // Get server player to forward modified packet
+            player::Player* server_player = core_->get_client()->get_player();
+            if (server_player && server_player->is_connected()) {
+                // Rebuild byte stream with modified packet
+                ByteStream<> byte_stream;
+                byte_stream.write(packet::NET_MESSAGE_GAME_PACKET);
+                byte_stream.write(packet);
+
+                // Add ext_data if present
+                std::vector<std::byte> ext_data = event.get_ext_data();
+                if (!ext_data.empty()) {
+                    byte_stream.write_vector(ext_data, false);
+                }
+
+                // Send modified packet to server
+                server_player->send_packet(byte_stream.get_data(), 0);
+            }
         }
 
         // Fast drop/trash/roulette don't need packet modification
