@@ -533,7 +533,7 @@ private:
         packet::GameUpdatePacket punch_packet{};
         punch_packet.type = packet::PACKET_STATE;
         punch_packet.net_id = -1;
-        punch_packet.flags.value = 0;
+        punch_packet.flags.value = packet::PACKET_FLAG_NONE;
         punch_packet.flags.on_punched = 1;
 
         ByteStream<> punch_stream;
