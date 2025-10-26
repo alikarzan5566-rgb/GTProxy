@@ -6,6 +6,7 @@
 #include "../core/logger.hpp"
 #include "../utils/byte_stream.hpp"
 #include <magic_enum/magic_enum.hpp>
+#include <cstring>
 
 namespace utils {
 class PacketUtils {
