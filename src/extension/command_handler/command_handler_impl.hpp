@@ -212,6 +212,18 @@ public:
                     event.canceled = true;
                     return;
                 }
+
+                // Handle /fd (fast drop)
+                if (command == "/fd" || command == "/fastdrop") {
+                    fastdrop_enabled_ = !fastdrop_enabled_;
+                    player::Player* to_player = core_->get_server()->get_player();
+                    if (to_player) {
+                        std::string msg = fastdrop_enabled_ ? "`2Fast Drop enabled!" : "`4Fast Drop disabled!";
+                        utils::PacketUtils::send_chat_message(to_player, msg);
+                    }
+                    event.canceled = true;
+                    return;
+                }
             }
         );
 
