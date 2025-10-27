@@ -226,6 +226,8 @@ public:
 
                 // Handle fly modification
                 if (fly_enabled_ && packet.type == packet::PACKET_STATE) {
+                    spdlog::info("FLY: Intercepting PACKET_STATE, modifying velocity...");
+
                     // Cancel the original packet
                     event.canceled = true;
 
