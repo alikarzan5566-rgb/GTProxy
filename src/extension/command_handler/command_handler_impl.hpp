@@ -370,6 +370,8 @@ public:
 
                                     std::string raw_message = message.get_raw();
 
+                                    spdlog::info("FastDrop: Sending dialog_return:\n{}", raw_message);
+
                                     ByteStream<> byte_stream;
                                     byte_stream.write(packet::NET_MESSAGE_GENERIC_TEXT);
                                     byte_stream.write(raw_message, false);
