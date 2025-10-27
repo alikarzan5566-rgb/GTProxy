@@ -224,11 +224,37 @@ public:
 
                 packet::GameUpdatePacket packet = event.get_packet();
 
-                // Only handle fly if enabled and it's a state packet
+                // Handle fly modification
                 if (fly_enabled_ && packet.type == packet::PACKET_STATE) {
-                    // Don't modify, just let it through for now
-                    // Fly modification can be tricky and cause crashes
-                    // We'll implement it more carefully later
+                    // Cancel the original packet
+                    event.canceled = true;
+
+                    // Modify packet to enable flying
+                    packet.flags.on_jump = 1;
+
+                    // Get server player to forward modified packet
+                    player::Player* server_player = core_->get_client()->get_player();
+                    if (server_player && server_player->is_connected()) {
+                        try {
+                            // Rebuild byte stream with modified packet
+                            ByteStream<> byte_stream;
+                            byte_stream.write(packet::NET_MESSAGE_GAME_PACKET);
+                            byte_stream.write(packet);
+
+                            // Add ext_data if present
+                            std::vector<std::byte> ext_data = event.get_ext_data();
+                            if (!ext_data.empty()) {
+                                byte_stream.write_data(ext_data.data(), ext_data.size());
+                            }
+
+                            // Send modified packet to server
+                            server_player->send_packet(byte_stream.get_data(), 0);
+                        } catch (const std::exception& e) {
+                            spdlog::error("Error modifying fly packet: {}", e.what());
+                            // If error, don't cancel event so original packet goes through
+                            event.canceled = false;
+                        }
+                    }
                 }
             }
         );
