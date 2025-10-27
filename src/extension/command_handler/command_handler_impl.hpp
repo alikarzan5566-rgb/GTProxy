@@ -81,13 +81,12 @@ public:
                 if (command == "/proxy") {
                     player::Player* to_player = core_->get_server()->get_player();
                     if (to_player) {
-                        try {
-                            std::string dialog_content = create_proxy_help_dialog();
-                            utils::PacketUtils::send_dialog(to_player, dialog_content);
-                        } catch (const std::exception& e) {
-                            spdlog::error("Error sending dialog: {}", e.what());
-                            utils::PacketUtils::send_chat_message(to_player, "`4Error showing help dialog");
-                        }
+                        // Send help as chat messages instead of dialog for now
+                        utils::PacketUtils::send_chat_message(to_player, "`wGTProxy Commands:");
+                        utils::PacketUtils::send_chat_message(to_player, "`2/proxy `o- Show this help");
+                        utils::PacketUtils::send_chat_message(to_player, "`2/fly `o- Toggle flying");
+                        utils::PacketUtils::send_chat_message(to_player, "`2/spam <text> <delay> `o- Spam messages");
+                        utils::PacketUtils::send_chat_message(to_player, "`2/warp <world> `o- Warp to world");
                     }
                     event.canceled = true;
                     return;
