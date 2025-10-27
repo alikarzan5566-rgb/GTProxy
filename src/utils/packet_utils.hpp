@@ -35,11 +35,16 @@ public:
         packet::Variant variant("OnDialogRequest", dialog_content);
         std::vector<std::byte> variant_data = variant.serialize();
 
-        // Create game packet
+        // Create game packet - following the exact pattern from packet_helper.hpp
         packet::GameUpdatePacket packet{};
         packet.type = packet::PACKET_CALL_FUNCTION;
         packet.net_id = static_cast<uint32_t>(-1);
-        packet.data_size = static_cast<uint32_t>(variant_data.size());
+
+        // Set extended flag and data size (this is what was missing!)
+        if (!variant_data.empty()) {
+            packet.flags.extended = 1;
+            packet.data_size = static_cast<uint32_t>(variant_data.size());
+        }
 
         // Build byte stream
         ByteStream<> byte_stream;
