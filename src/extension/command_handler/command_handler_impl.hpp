@@ -24,6 +24,7 @@ class CommandHandlerExtension final : public ICommandHandlerExtension {
     bool fly_enabled_ = false;
     bool spam_enabled_ = false;
     bool autofarm_enabled_ = false;
+    bool fastdrop_enabled_ = false;
 
     // Spam configuration
     std::string spam_text_;
