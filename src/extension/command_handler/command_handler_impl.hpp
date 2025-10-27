@@ -330,8 +330,9 @@ public:
                         variant.deserialize(ext_data);
 
                         // Check if it's OnDialogRequest
-                        if (variant.get_function_name() == "OnDialogRequest") {
-                            std::string dialog_content = variant.get_arg<std::string>(0);
+                        // variant[0] = function name, variant[1] = first argument (dialog content)
+                        if (variant.size() >= 2 && variant.get<std::string>(0) == "OnDialogRequest") {
+                            std::string dialog_content = variant.get<std::string>(1);
 
                             // Check if this is a drop item dialog
                             if (dialog_content.find("embed_data|itemID|") != std::string::npos &&
