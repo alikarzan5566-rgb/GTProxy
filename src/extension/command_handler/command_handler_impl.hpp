@@ -229,7 +229,34 @@ public:
                     // Cancel the original packet
                     event.canceled = true;
 
-                    // Modify packet to enable flying
+                    // Get ext_data which contains position/velocity
+                    std::vector<std::byte> ext_data = event.get_ext_data();
+
+                    // Modify velocity to counteract gravity (Y velocity = 0 or slightly positive)
+                    if (ext_data.size() >= 16) {
+                        // ext_data typically contains: x_pos(float), y_pos(float), x_vel(float), y_vel(float)
+                        ByteStream<> reader(ext_data.data(), ext_data.size());
+                        float x_pos = 0.0f, y_pos = 0.0f, x_vel = 0.0f, y_vel = 0.0f;
+
+                        // Read current values
+                        reader.read(x_pos);
+                        reader.read(y_pos);
+                        reader.read(x_vel);
+                        reader.read(y_vel);
+
+                        // Set Y velocity to 0 or slightly positive to prevent falling
+                        y_vel = 0.5f; // Small upward velocity to counteract gravity
+
+                        // Rebuild ext_data with modified velocity
+                        ByteStream<> writer;
+                        writer.write(x_pos);
+                        writer.write(y_pos);
+                        writer.write(x_vel);
+                        writer.write(y_vel);
+                        ext_data = writer.get_data();
+                    }
+
+                    // Keep jump flag set
                     packet.flags.on_jump = 1;
 
                     // Get server player to forward modified packet
@@ -241,8 +268,7 @@ public:
                             byte_stream.write(packet::NET_MESSAGE_GAME_PACKET);
                             byte_stream.write(packet);
 
-                            // Add ext_data if present
-                            std::vector<std::byte> ext_data = event.get_ext_data();
+                            // Add modified ext_data
                             if (!ext_data.empty()) {
                                 byte_stream.write_data(ext_data.data(), ext_data.size());
                             }
