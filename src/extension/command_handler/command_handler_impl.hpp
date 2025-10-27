@@ -52,6 +52,7 @@ public:
             "add_textbox|`2Available Commands:|\n"
             "add_smalltext|`w/proxy `o- Show this help|\n"
             "add_smalltext|`w/fly `o- Toggle flying mode|\n"
+            "add_smalltext|`w/fd `o- Toggle fast drop (drops all items)|\n"
             "add_smalltext|`w/spam <text> <delay> `o- Spam messages|\n"
             "add_smalltext|`w/warp <world> `o- Warp to world|\n"
             "add_smalltext|`w/autofarm `o- Auto farm (WIP)|\n"
