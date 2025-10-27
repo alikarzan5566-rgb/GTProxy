@@ -68,9 +68,9 @@ public:
                     return;
                 }
 
-                TextParse textParse(event.get_message().get_raw(), "|");
-                std::string command = textParse.get("text");
-                std::string action = textParse.get("action");
+                // Get the text command directly from the already-parsed message
+                std::string command = event.get_message().get("text");
+                std::string action = event.get_message().get("action");
 
                 // Handle /proxy
                 if (command == "/proxy") {
