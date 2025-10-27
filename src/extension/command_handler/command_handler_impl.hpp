@@ -300,6 +300,92 @@ public:
             }
         );
 
+        // Server packet listener for fast drop (intercept OnDialogRequest)
+        core_->get_event_dispatcher().prependListener(
+            core::EventType::Packet,
+            [this](const core::EventPacket& event) {
+                // Only intercept packets FROM SERVER
+                if (event.from != core::EventFrom::FromServer) {
+                    return;
+                }
+
+                // Check if fast drop is enabled
+                if (!fastdrop_enabled_) {
+                    return;
+                }
+
+                packet::GameUpdatePacket packet = event.get_packet();
+
+                // Check if it's a variant call (OnDialogRequest)
+                if (packet.type == packet::PACKET_CALL_FUNCTION) {
+                    try {
+                        std::vector<std::byte> ext_data = event.get_ext_data();
+                        if (ext_data.empty()) {
+                            return;
+                        }
+
+                        // Parse variant
+                        packet::Variant variant;
+                        variant.deserialize(ext_data);
+
+                        // Check if it's OnDialogRequest
+                        if (variant.get_function_name() == "OnDialogRequest") {
+                            std::string dialog_content = variant.get_arg<std::string>(0);
+
+                            // Check if this is a drop item dialog
+                            if (dialog_content.find("embed_data|itemID|") != std::string::npos &&
+                                dialog_content.find("Drop") != std::string::npos) {
+
+                                spdlog::info("FastDrop: Intercepting drop dialog");
+
+                                // Parse itemID
+                                size_t itemid_pos = dialog_content.find("embed_data|itemID|");
+                                if (itemid_pos == std::string::npos) return;
+
+                                std::string itemid_substr = dialog_content.substr(itemid_pos + 18);
+                                size_t itemid_end = itemid_substr.find("|");
+                                std::string itemid = itemid_substr.substr(0, itemid_end);
+
+                                // Parse count
+                                size_t count_pos = dialog_content.find("count||");
+                                if (count_pos == std::string::npos) return;
+
+                                std::string count_substr = dialog_content.substr(count_pos + 7);
+                                size_t count_end = count_substr.find("|");
+                                std::string count = count_substr.substr(0, count_end);
+
+                                spdlog::info("FastDrop: itemID={}, count={}", itemid, count);
+
+                                // Send dialog return with full count to server
+                                player::Player* server_player = core_->get_client()->get_player();
+                                if (server_player && server_player->is_connected()) {
+                                    TextParse message;
+                                    message.add("action", {"dialog_return"});
+                                    message.add("dialog_name", {"drop_item"});
+                                    message.add("itemID", {itemid});
+                                    message.add("count", {count});
+
+                                    std::string raw_message = message.get_raw();
+
+                                    ByteStream<> byte_stream;
+                                    byte_stream.write(packet::NET_MESSAGE_GENERIC_TEXT);
+                                    byte_stream.write(raw_message, false);
+
+                                    server_player->send_packet(byte_stream.get_data(), 0);
+
+                                    // Cancel the dialog display
+                                    event.canceled = true;
+                                    spdlog::info("FastDrop: Auto-dropped {} items (ID: {})", count, itemid);
+                                }
+                            }
+                        }
+                    } catch (const std::exception& e) {
+                        spdlog::error("FastDrop error: {}", e.what());
+                    }
+                }
+            }
+        );
+
         // Disconnect handler
         core_->get_event_dispatcher().prependListener(
             core::EventType::Disconnection,
@@ -312,6 +398,7 @@ public:
                     autofarm_enabled_ = false;
                     autofarm_item_id_ = 0;
                     waiting_for_autofarm_item_selection_ = false;
+                    fastdrop_enabled_ = false;
                 }
             }
         );
