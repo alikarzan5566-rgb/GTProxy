@@ -72,6 +72,11 @@ public:
                 std::string command = event.get_message().get("text");
                 std::string action = event.get_message().get("action");
 
+                // Debug logging
+                if (!command.empty() && command[0] == '/') {
+                    spdlog::info("Command received: '{}'", command);
+                }
+
                 // Handle /proxy
                 if (command == "/proxy") {
                     player::Player* to_player = core_->get_server()->get_player();
