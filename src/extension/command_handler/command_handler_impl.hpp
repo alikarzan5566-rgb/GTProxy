@@ -339,16 +339,17 @@ public:
                                 dialog_content.find("Drop") != std::string::npos) {
 
                                 spdlog::info("FastDrop: Intercepting drop dialog");
+                                spdlog::info("FastDrop: Full dialog content:\n{}", dialog_content);
 
-                                // Parse itemID
+                                // Parse itemID from embed_data|itemID|XXXX
                                 size_t itemid_pos = dialog_content.find("embed_data|itemID|");
                                 if (itemid_pos == std::string::npos) return;
 
                                 std::string itemid_substr = dialog_content.substr(itemid_pos + 18);
-                                size_t itemid_end = itemid_substr.find("|");
+                                size_t itemid_end = itemid_substr.find_first_of("|\n");
                                 std::string itemid = itemid_substr.substr(0, itemid_end);
 
-                                // Parse count
+                                // Parse count from add_text_input|count||XXX|
                                 size_t count_pos = dialog_content.find("count||");
                                 if (count_pos == std::string::npos) return;
 
@@ -356,7 +357,7 @@ public:
                                 size_t count_end = count_substr.find("|");
                                 std::string count = count_substr.substr(0, count_end);
 
-                                spdlog::info("FastDrop: itemID={}, count={}", itemid, count);
+                                spdlog::info("FastDrop: Parsed itemID={}, count={}", itemid, count);
 
                                 // Send dialog return with full count to server
                                 player::Player* server_player = core_->get_client()->get_player();
